@@ -1,17 +1,22 @@
 package techacademy.saitou.junki.taskapp;
 
+import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.content.Context;
 import android.widget.TextView;
-import android.view.LayoutInflater;
 
 /**
  * Created by junki on 2018/06/02.
  */
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+
 
 public class TaskAdapter extends BaseAdapter{
     private LayoutInflater mLayoutInflater;
@@ -48,6 +53,10 @@ public class TaskAdapter extends BaseAdapter{
         TextView textView2 = (TextView) convertView.findViewById(android.R.id.text2);
 
         textView1.setText(mTaskList.get(position));
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.JAPANESE);
+        Date date = mTaskList.get(position).getDate();
+        textView2.setText(simpleDateFormat.format(date));
 
         return convertView;
     }

@@ -8,10 +8,24 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
+import io.realm.Sort;
+
 public class MainActivity extends AppCompatActivity {
+
+    private Realm mRealm;
+    private RealmChangeListener mRealmListener = new RealmChangeListener() {
+        @Override
+        public void onChange(Object element) {
+            reloadListView();
+        }
+    };
     private ListView mListView;
     private TaskAdapter mTaskAdapter;
 
@@ -29,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mRealm = Realm.getDefaultInstance();
+        mRealm.addChangeListener(mRealmListener);
+
         mTaskAdapter = new TaskAdapter(MainActivity.this);
         mListView = (ListView) findViewById(R.id.listView1);
 
@@ -36,26 +53,48 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                                           }
-                                       });
+            }
+        });
 
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parant, View view, int position, long id) {
-                return true;
-            }
+                            //タスクを削除
+                    return true;
+                }
         });
+
+        addTaskForText();
         reloadListView();
     }
 
-    private void reloadListView(){
-        List<String> taskList = new ArrayList<String>();
-        taskList.add("aaa");
-        taskList.add("bbb");
-        taskList.add("ccc");
-
-        mTaskAdapter.setTaskList(taskList);
+    private void reloadListView() {
+        // Realmデータベースから、「全てのデータを取得して新しい日時順に並べた結果」を取得
+        RealmResults<Task> taskRealmResults = mRealm.where(Task.class).findAll().sort("date", Sort.DESCENDING);
+        // 上記の結果を、TaskList としてセットする
+        mTaskAdapter.setTaskList(mRealm.copyFromRealm(taskRealmResults));
+        // TaskのListView用のアダプタに渡す
         mListView.setAdapter(mTaskAdapter);
+        // 表示を更新するために、アダプターにデータが変更されたことを知らせる
         mTaskAdapter.notifyDataSetChanged();
+
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+
+        mRealm.close();
+    }
+
+    private void addTaskForText(){
+        Task task = new Task();
+        task.setTitle("作業");
+        task.setContents("プログラムを書いてPUSHする");
+        task.setDate(new Date());
+        task.setId(0);
+        mRealm.beginTransaction();
+        mRealm.copyToRealmOrUpdate(task);
+        mRealm.commitTransaction();
     }
 }
