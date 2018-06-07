@@ -7,9 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-/**
- * Created by junki on 2018/06/02.
- */
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,40 +16,43 @@ import java.util.Locale;
 
 
 public class TaskAdapter extends BaseAdapter{
-    private LayoutInflater mLayoutInflater;
-    private List<String> mTaskList;
+    private LayoutInflater mLayoutInflater = null;
+    private List<Task> mTaskList;
 
-    public TaskAdapter(Context context){
+    public TaskAdapter(Context context) {
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    public void setTaskList(List<String> taskList){
+    public void setTaskList(List<Task> taskList) {
         mTaskList = taskList;
     }
+
     @Override
-    public int getCount() { //アイテムの数を返す
+    public int getCount() {
         return mTaskList.size();
     }
 
     @Override
-    public Object getItem(int position) {//アイテムを返す
+    public Object getItem(int position) {
         return mTaskList.get(position);
     }
 
     @Override
-    public long getItemId(int position) {//アイテムのIDを返す
-        return 0;
+    public long getItemId(int position) {
+        return mTaskList.get(position).getId();
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {//Viewを返す。
-        if(convertView == null){
-            convertView = mLayoutInflater.inflate(android.R.layout.simple_list_item_2,null);
+    public View getView(int position, View convertView, ViewGroup parent) {
+
+        if (convertView == null) {
+            convertView = mLayoutInflater.inflate(android.R.layout.simple_list_item_2, null);
         }
+
         TextView textView1 = (TextView) convertView.findViewById(android.R.id.text1);
         TextView textView2 = (TextView) convertView.findViewById(android.R.id.text2);
 
-        textView1.setText(mTaskList.get(position));
+        textView1.setText(mTaskList.get(position).getTitle());
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.JAPANESE);
         Date date = mTaskList.get(position).getDate();
