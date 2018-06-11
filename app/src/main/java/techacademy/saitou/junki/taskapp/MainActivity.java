@@ -10,7 +10,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+
+import java.util.List;
+import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
@@ -29,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     };
     private ListView mListView;
     private TaskAdapter mTaskAdapter;
+    private Button mSearchButton;
+    private EditText mEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +58,29 @@ public class MainActivity extends AppCompatActivity {
         // ListViewの設定
         mTaskAdapter = new TaskAdapter(MainActivity.this);
         mListView = (ListView) findViewById(R.id.listView1);
+        mSearchButton = (Button) findViewById(R.id.search_button);
+        mEditText = (EditText) findViewById(R.id.search_edit);
+
+
+        mSearchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String text = mEditText.getText().toString();
+                if (text.isEmpty()){
+                    reloadListView();
+                }else {
+                    RealmResults<Task> results = mRealm.where(Task.class).equalTo("category", text).findAll();
+
+                    // 上記の結果を、TaskList としてセットする
+                    mTaskAdapter.setTaskList(mRealm.copyFromRealm(results));
+                    // TaskのListView用のアダプタに渡す
+                    mListView.setAdapter(mTaskAdapter);
+                    // 表示を更新するために、アダプターにデータが変更されたことを知らせる
+                    mTaskAdapter.notifyDataSetChanged();
+                }
+            }
+        });
 
         // ListViewをタップしたときの処理
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -90,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                         results.deleteAllFromRealm();
                         mRealm.commitTransaction();
 
-                        Intent resultIntent = new Intent(getApplicationContext(),TaskAlarmReceiver.class);
+                        Intent resultIntent = new Intent(getApplicationContext(), TaskAlarmReceiver.class);
                         PendingIntent resultPendingIntent = PendingIntent.getBroadcast(
                                 MainActivity.this,
                                 task.getId(),
